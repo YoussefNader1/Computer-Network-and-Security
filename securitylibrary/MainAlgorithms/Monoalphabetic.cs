@@ -13,7 +13,49 @@ namespace SecurityLibrary
    
         public string Analyse(string plainText, string cipherText)
         {
-            throw new NotImplementedException();
+            string keyval = "";
+            string lowerCT = cipherText.ToLower();
+            string PPT = "";
+            string PCT = "";
+            HashSet<char> FPT = new HashSet<char>();
+            HashSet<char> FCT = new HashSet<char>();
+            for (int i = 0; i < plainText.Length; i++)
+            {
+                FPT.Add(plainText[i]);
+                FCT.Add(lowerCT[i]);
+            }
+            for (int i = 0; i < 26; i++)
+            {
+                FPT.Add(alphabet[i]);
+                FCT.Add(alphabet[i]);
+            }
+
+            Dictionary<char, char> key = new Dictionary<char, char>();
+            foreach (var item in FPT)
+            {
+                PPT += item;
+            }            
+            foreach (var item in FCT)
+            {
+                PCT += item;
+            }
+
+            for (int i = 0; i < 26; i++)
+            {
+                key[PPT[i]] = PCT[i];
+
+            }
+            foreach (KeyValuePair<char, char> sortedDict in key.OrderBy(i => i.Key))
+            {
+                keyval += sortedDict.Value;
+            }
+            
+
+
+
+
+
+            return keyval;
         }
 
         public string Decrypt(string cipherText, string key)
