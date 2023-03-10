@@ -14,7 +14,26 @@ namespace SecurityLibrary
     {
         public List<int> Analyse(List<int> plainText, List<int> cipherText)
         {
-            throw new NotImplementedException();
+
+            List<int> Key = new List<int> ();
+
+            const int ENGLISH_LETTERS = 26;
+            for (int a = 0; a < ENGLISH_LETTERS; a++)
+                for (int b = 0; b < ENGLISH_LETTERS; b++)
+                    for (int c = 0; c < ENGLISH_LETTERS; c++)
+                        for (int d = 0; d < ENGLISH_LETTERS; d++)
+                        {
+                            Key.Add (a);
+                            Key.Add (b);
+                            Key.Add (c);
+                            Key.Add (d);
+                            List<int> returnedCipher = Encrypt(plainText, Key);
+                            if (returnedCipher.SequenceEqual(cipherText))
+                                return Key;
+                            else
+                                Key = new List<int>();
+                        }
+            throw new InvalidAnlysisException();
         }
 
         public List<int> Decrypt2(List<int> cipherText, List<int> key)
@@ -124,7 +143,21 @@ namespace SecurityLibrary
 
         public List<int> Analyse3By3Key(List<int> plainText, List<int> cipherText)
         {
-            throw new NotImplementedException();
+            //TRANSPOSE
+            List <int> CT = new List<int>();
+            CT.Add(cipherText[0]);
+            CT.Add(cipherText[3]);
+            CT.Add(cipherText[6]);
+
+            CT.Add(cipherText[1]);
+            CT.Add(cipherText[4]);
+            CT.Add(cipherText[7]);
+
+            CT.Add(cipherText[2]);
+            CT.Add(cipherText[5]);
+            CT.Add(cipherText[8]);
+
+            return Decrypt3(CT, plainText);
         }
 
     }
