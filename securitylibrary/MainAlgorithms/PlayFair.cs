@@ -10,7 +10,7 @@ namespace SecurityLibrary
     {
         public string NewKey(string key)
         {
-            string alphabet = "abcdefghiklmnopqrstuvwxyz"; // j removed
+            string alphabet = "abcdefghiklmnopqrstuvwxyz"; // without j 
             HashSet<char> NKey = new HashSet<char>();
             for (int i = 0; i < key.Length; i++)
             {
@@ -63,24 +63,13 @@ namespace SecurityLibrary
             {
                 for (int j = 0; j < 5; j++)
                 {
-                    //if (counter < 25)
-                    //{
-                        KMatrix.Add(key[i,j], new Tuple<int, int>(i, j));
-                        //tmp.Add(Mkey.ElementAt(counter));
-                        //counter++;
-                    //}
+                    KMatrix.Add(key[i,j], new Tuple<int, int>(i, j));
+
                 }
             }
 
             return KMatrix;
         }
-
-
-        public string Decrypt(string cipherText, string key)
-        {
-            throw new NotImplementedException();
-        }
-
         public string ModifiedPlainText(string PT)
         {
             for (int i = 0; i < PT.Length - 1; i += 2)
@@ -94,6 +83,60 @@ namespace SecurityLibrary
 
             return PT;
         }
+
+
+        public string Decrypt(string cipherText, string key)
+        {
+            string PT = "";
+            string cipher = cipherText.ToLower();
+
+            // build matrix
+            string Nkey = NewKey(key);
+            char[,] KeyMatrix = ModKey(Nkey);
+            Dictionary<char, Tuple<int, int>> KMatrix = KeyMatrixCharWithIndex(KeyMatrix);
+
+
+            for (int i = 0; i < cipherText.Length; i += 2)
+            {
+                char c1 = cipher[i], c2 = cipher[i + 1];
+                if (KMatrix[c1].Item2 == KMatrix[c2].Item2)
+                {
+                    PT += KeyMatrix[(KMatrix[c1].Item1 + 4) % 5,KMatrix[c1].Item2];
+                    PT += KeyMatrix[(KMatrix[c2].Item1 + 4) % 5,KMatrix[c2].Item2];
+                }
+                else if (KMatrix[c1].Item1 == KMatrix[c2].Item1)
+                {
+                    PT += KeyMatrix[KMatrix[c1].Item1,(KMatrix[c1].Item2 + 4) % 5];
+                    PT += KeyMatrix[KMatrix[c2].Item1,(KMatrix[c2].Item2 + 4) % 5];
+                }
+                else
+                {
+                    PT += KeyMatrix[KMatrix[c1].Item1,KMatrix[c2].Item2];
+                    PT += KeyMatrix[KMatrix[c2].Item1,KMatrix[c1].Item2];
+                }
+            }
+
+
+            string Plain_without_X = PT;
+            if (PT[PT.Length - 1] == 'x')
+            {
+                Plain_without_X = Plain_without_X.Remove(PT.Length - 1);
+            }
+            for (int i = 0; i < Plain_without_X.Length; i++)
+            {
+                if (PT[i] == 'x')
+                {
+                    if (PT[i-1] == PT[i+1])
+                    {
+                        Plain_without_X = Plain_without_X.Remove(i, 1);
+                    }
+                }
+            }
+            return Plain_without_X;
+
+        }
+
+
 
         public string Encrypt(string plainText, string key)
         {

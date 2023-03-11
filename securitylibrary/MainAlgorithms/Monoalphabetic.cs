@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Globalization;
 
 namespace SecurityLibrary
 {
@@ -122,7 +123,37 @@ namespace SecurityLibrary
         /// <returns>Plain text</returns>
         public string AnalyseUsingCharFrequency(string cipher)
         {
-            throw new NotImplementedException();
+            cipher = cipher.ToLower();
+            string alphabetFreq = "etaoinsrhldcumfpgwybvkxjqz";
+            Dictionary<char, int> cipherFreq = new Dictionary<char, int>();
+            SortedDictionary<char, char> keyDict = new SortedDictionary<char, char>();
+            string key = "";
+            for (int i = 0; i < cipher.Length; i++)
+            {
+                if (!cipherFreq.ContainsKey(cipher[i]))
+                {
+                    cipherFreq.Add(cipher[i], 0);
+                }
+                else
+                {
+                    cipherFreq[cipher[i]]++; // inc freq of the letter
+                }
+            }
+            cipherFreq = cipherFreq.OrderBy(x => x.Value).Reverse().ToDictionary(x => x.Key, x => x.Value);
+            int counter = 0;
+            foreach (var item in cipherFreq)
+            {
+                keyDict.Add(item.Key, alphabetFreq[counter]);
+                counter++;
+            }
+
+            for (int i = 0; i < cipher.Length; i++)
+            {
+                key += keyDict[cipher[i]];
+            }
+
+
+            return key;
         }
     }
 }
