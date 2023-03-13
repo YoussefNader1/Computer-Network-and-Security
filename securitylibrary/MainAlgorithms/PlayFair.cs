@@ -87,6 +87,7 @@ namespace SecurityLibrary
 
         public string Decrypt(string cipherText, string key)
         {
+
             string PT = "";
             string cipher = cipherText.ToLower();
 
@@ -101,40 +102,53 @@ namespace SecurityLibrary
                 char c1 = cipher[i], c2 = cipher[i + 1];
                 if (KMatrix[c1].Item2 == KMatrix[c2].Item2)
                 {
-                    PT += KeyMatrix[(KMatrix[c1].Item1 + 4) % 5,KMatrix[c1].Item2];
-                    PT += KeyMatrix[(KMatrix[c2].Item1 + 4) % 5,KMatrix[c2].Item2];
+                    PT += KeyMatrix[(KMatrix[c1].Item1 + 4) % 5, KMatrix[c1].Item2];
+                    PT += KeyMatrix[(KMatrix[c2].Item1 + 4) % 5, KMatrix[c2].Item2];
                 }
                 else if (KMatrix[c1].Item1 == KMatrix[c2].Item1)
                 {
-                    PT += KeyMatrix[KMatrix[c1].Item1,(KMatrix[c1].Item2 + 4) % 5];
-                    PT += KeyMatrix[KMatrix[c2].Item1,(KMatrix[c2].Item2 + 4) % 5];
+                    PT += KeyMatrix[KMatrix[c1].Item1, (KMatrix[c1].Item2 + 4) % 5];
+                    PT += KeyMatrix[KMatrix[c2].Item1, (KMatrix[c2].Item2 + 4) % 5];
                 }
                 else
                 {
-                    PT += KeyMatrix[KMatrix[c1].Item1,KMatrix[c2].Item2];
-                    PT += KeyMatrix[KMatrix[c2].Item1,KMatrix[c1].Item2];
+                    PT += KeyMatrix[KMatrix[c1].Item1, KMatrix[c2].Item2];
+                    PT += KeyMatrix[KMatrix[c2].Item1, KMatrix[c1].Item2];
                 }
             }
 
-
-            string Plain_without_X = PT;
+            string answer = "";
+            string plain_modi = PT;
             if (PT[PT.Length - 1] == 'x')
             {
-                Plain_without_X = Plain_without_X.Remove(PT.Length - 1);
+                plain_modi = plain_modi.Remove(PT.Length - 1);
             }
-            for (int i = 0; i < Plain_without_X.Length; i++)
+
+            int w = 0;
+            for (int i = 0; i < plain_modi.Length; i++)
             {
                 if (PT[i] == 'x')
                 {
-                    if (PT[i-1] == PT[i+1])
+                    if (PT[i - 1] == PT[i + 1])
                     {
-                        Plain_without_X = Plain_without_X.Remove(i, 1);
+                        if (i + w < plain_modi.Length && (i - 1) % 2 == 0)
+                        {
+                            plain_modi = plain_modi.Remove(i + w, 1);
+                            w--;
+                        }
                     }
                 }
             }
-            return Plain_without_X;
+
+            answer += plain_modi;
+
+            return answer;
+
 
         }
+
+
+
 
 
 
@@ -175,6 +189,11 @@ namespace SecurityLibrary
             CT.ToUpper();
 
             return CT;
+        }
+
+        public string Analyse(string largeCipher, string largePlain)
+        {
+            throw new NotImplementedException();
         }
     }
 }
