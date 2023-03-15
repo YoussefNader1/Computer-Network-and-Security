@@ -116,33 +116,23 @@ namespace SecurityLibrary
                     PT += KeyMatrix[KMatrix[c2].Item1, KMatrix[c1].Item2];
                 }
             }
-
-            string answer = "";
-            string plain_modi = PT;
-            if (PT[PT.Length - 1] == 'x')
+            int textLength = PT.Length - 1;
+            if (PT[textLength] == 'x')
             {
-                plain_modi = plain_modi.Remove(PT.Length - 1);
+                PT = PT.Remove(textLength);
+                textLength--;
             }
-
-            int w = 0;
-            for (int i = 0; i < plain_modi.Length; i++)
+            for (int i = 1; i < textLength - 1; i += 2)
             {
-                if (PT[i] == 'x')
+                if (PT[i] == 'x' && PT[i - 1] == PT[i + 1])
                 {
-                    if (PT[i - 1] == PT[i + 1])
-                    {
-                        if (i + w < plain_modi.Length && (i - 1) % 2 == 0)
-                        {
-                            plain_modi = plain_modi.Remove(i + w, 1);
-                            w--;
-                        }
-                    }
+                    PT = PT.Remove(i, 1);
+                    i--;
+                    textLength--;
                 }
             }
 
-            answer += plain_modi;
-
-            return answer;
+            return PT;
 
 
         }
