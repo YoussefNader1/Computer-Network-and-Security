@@ -23,15 +23,23 @@ namespace SecurityLibrary.AES
             string[,] subPlain2d = subBytes(plain2d);
             string[,] shiftPlain2d = shiftRows(subPlain2d);
             string[,] multiply_plan = mlti(shiftPlain2d);
-           /* for(int i=0;i<4;i++)
-            {
-                for(int j=0;j<4;j++)
-                {
-                    Console.Write(multiply_plan[i, j] + "  ");
-                }
-                Console.WriteLine();
-            }*/
-            return null;
+
+            //round key
+            
+            string[,] round_key = plain2dGenrator("0xa0fefe1788542cb123a339392a6c7605");
+
+            string[,] addRoundKeyPlain2d = add_round_key(multiply_plan,round_key);
+
+
+            /* for(int i=0;i<4;i++)
+             {
+                 for(int j=0;j<4;j++)
+                 {
+                     Console.Write(multiply_plan[i, j] + "  ");
+                 }
+                 Console.WriteLine();
+             }*/
+             return null;
         }
 
         string[,] plain2dGenrator(string plainText)
@@ -234,6 +242,46 @@ namespace SecurityLibrary.AES
             return strHex;
         }
         //around_key
+        public string[,] add_round_key(string[,] multiply_plan,string[,] roundKey)
+        {
+            string[,] addRoundKeyPlain2d = new string[4, 4];
+            for(int i = 0; i < 4; i++)
+            {
+                for(int j = 0; j < 4; j++)
+                {
+                    string binary1 = Convert.ToString(Convert.ToInt64(multiply_plan[i,j][0].ToString(), 16), 2);
+                    string binary2 = Convert.ToString(Convert.ToInt64(multiply_plan[i, j][1].ToString(), 16), 2);
+                    string binary3 = Convert.ToString(Convert.ToInt64(roundKey[i, j][0].ToString(), 16), 2);
+                    string binary4 = Convert.ToString(Convert.ToInt64(roundKey[i, j][1].ToString(), 16), 2);
+
+                    binary1 = binary1.PadLeft(4, '0');
+                    binary2 = binary2.PadLeft(4, '0');
+                    binary3 = binary3.PadLeft(4, '0');
+                    binary4 = binary4.PadLeft(4, '0');
+
+                    string first_binary = binary1 + binary2;
+                    string second_binary = binary3 + binary4;
+                    string result=xor(first_binary, second_binary);
+
+                    string str1 = result.Substring(0, 4);
+                    string str2 = result.Substring(4, 4);
+
+                    string strHex = Convert.ToInt32(str1, 2).ToString("X").ToLower() + Convert.ToInt32(str2, 2).ToString("X").ToLower();
+                    
+                    addRoundKeyPlain2d[i,j]=strHex;
+                }
+            }
+
+
+
+            return addRoundKeyPlain2d;
+
+        }
+
+
+
+
+
         //{
         //  //   0     1     2     3     4     5     6     7     8      9    A     B      C    D     E    F  
         //    {0x63, 0x7C, 0x77, 0x7B, 0xF2, 0x6B, 0x6F, 0xC5, 0x30, 0x01, 0x67, 0x2B, 0xFE, 0xD7, 0xAB, 0x76},//0
