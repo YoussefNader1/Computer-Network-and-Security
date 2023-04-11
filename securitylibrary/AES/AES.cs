@@ -18,13 +18,20 @@ namespace SecurityLibrary.AES
 
         public override string Encrypt(string plainText, string key)
         {
-            string[,] plain2d = plain2dGenrator(plainText);
-            Console.WriteLine(plain2d);
+            string s= "0x193de3bea0f4e22b9ac68d2ae9f84808";
+            string[,] plain2d = plain2dGenrator(s);
             string[,] subPlain2d = subBytes(plain2d);
             string[,] shiftPlain2d = shiftRows(subPlain2d);
-
-            Console.WriteLine(subPlain2d);
-            throw new NotImplementedException();
+            string[,] multiply_plan = mlti(shiftPlain2d);
+           /* for(int i=0;i<4;i++)
+            {
+                for(int j=0;j<4;j++)
+                {
+                    Console.Write(multiply_plan[i, j] + "  ");
+                }
+                Console.WriteLine();
+            }*/
+            return null;
         }
 
         string[,] plain2dGenrator(string plainText)
@@ -85,7 +92,7 @@ namespace SecurityLibrary.AES
             {  "70", "3e", "b5", "66", "48", "03", "f6", "0e", "61", "35", "57", "b9", "86", "c1", "1d", "9e" },
             {  "e1", "f8", "98", "11", "69", "d9", "8e", "94", "9b", "1e", "87", "e9", "ce", "55", "28", "df" },
             {  "8c", "a1", "89", "0d", "bf", "e6", "42", "68", "41", "99", "2d", "0f", "b0", "54", "bb", "16" } };
-
+       
         public string[,] shiftRows(string[,] subPlain2d)
         {
             string[,] shiftPlain2d = new string[4, 4];
@@ -108,6 +115,125 @@ namespace SecurityLibrary.AES
         }
 
 
+
+
+        //mix columns
+
+        string[,] multiply = { { "2", "3", "1", "1" }, { "1", "2", "3", "1" }, { "1", "1", "2", "3" }, { "3", "1", "1", "2" } };
+        private string[,] mlti(string[,] pt)
+        {
+            //convert pt_to binary
+            string[,] mix_colums = new string[4, 4];
+            string[,] bin = new string[4, 4];
+            string[] arr = new string[4];
+            for (int i = 0; i < 4; i++)
+            {
+                for (int j = 0; j < 4; j++)
+                {
+                    char char1 = pt[i, j][0];
+                    char char2 = pt[i, j][1];
+                    string binary1 = Convert.ToString(Convert.ToInt64(char1.ToString(), 16), 2);
+                    String binary2 = Convert.ToString(Convert.ToInt64(char2.ToString(), 16), 2);
+                    binary1 = binary1.PadLeft(4, '0');
+                    binary2 = binary2.PadLeft(4, '0');
+                    string final_binary = binary1 + binary2;
+
+                    bin[i, j] = final_binary;
+
+
+
+                }
+            }
+            for (int l = 0; l < 4; l++)
+            {
+                for (int i = 0; i < 4; i++)
+                {
+
+                    for (int j = 0; j < 4; j++)
+                    {
+                        if (multiply[i, j] == "2")
+                        {
+                            //shift
+                            string num = bin[j, l].Substring(1) + "0";
+                            if (bin[j, l][0] == '1')
+                            {
+                                num = xor(num, "00011011");
+                            }
+
+                            arr[j] = num;
+                        }
+                        else if (multiply[i, j] == "1")
+                        {
+                            arr[j] = bin[j, l];
+                        }
+
+                        else
+                        {
+                            string num = bin[j, l].Substring(1) + "0";
+                            if (bin[j, l][0] == '1')
+                            {
+                                num = xor(num, "00011011");
+                            }
+                            num = xor(bin[j, l], num);
+                            arr[j] = num;
+
+                        }
+
+
+                    }
+                    mix_colums[i, l] = xor(arr[0], arr[1], arr[2], arr[3]);
+                   
+                }
+            }
+
+            return mix_colums;
+        }
+        private string xor(string num, string b7)
+        {
+            string x = "";
+
+            for (int i = 0; i < 8; i++)
+            {
+                if (num[i] == b7[i])
+                    x += '0';
+                else
+                    x += '1';
+            }
+            return x;
+        }
+        private string xor(string num1, string num2, string num3, string num4)
+        {
+           
+            string x = "";
+
+            for (int i = 0; i < 8; i++)
+            {
+                if (num1[i] == '0' && (num2[i] == '1' && num3[i] == '1' && num4[i] == '1') || num1[i] == '1' && (num2[i] == '0' && num3[i] == '0' && num4[i] == '0'))
+                {
+                    x += '1';
+                }
+                else if (num2[i] == '0' && (num1[i] == '1' && num3[i] == '1' && num4[i] == '1') || num2[i] == '1' && (num1[i] == '0' && num3[i] == '0' && num4[i] == '0'))
+                {
+                    x += '1';
+                }
+                else if (num3[i] == '0' && (num2[i] == '1' && num1[i] == '1' && num4[i] == '1') || num3[i] == '1' && (num2[i] == '0' && num1[i] == '0' && num4[i] == '0'))
+                {
+                    x += '1';
+                }
+                else if (num4[i] == '0' && (num2[i] == '1' && num3[i] == '1' && num1[i] == '1') || num4[i] == '1' && (num2[i] == '0' && num3[i] == '0' && num1[i] == '0'))
+                {
+                    x += '1';
+                }
+                else
+                    x += '0';
+            }
+            
+            string str1 = x.Substring(0, 4);
+            string str2 = x.Substring(4, 4);
+            string strHex = Convert.ToInt32(str1, 2).ToString("X").ToLower()+ Convert.ToInt32(str2, 2).ToString("X").ToLower();
+            return strHex;
+        }
+        //around_key
         //{
         //  //   0     1     2     3     4     5     6     7     8      9    A     B      C    D     E    F  
         //    {0x63, 0x7C, 0x77, 0x7B, 0xF2, 0x6B, 0x6F, 0xC5, 0x30, 0x01, 0x67, 0x2B, 0xFE, 0xD7, 0xAB, 0x76},//0
