@@ -13,41 +13,27 @@ namespace SecurityLibrary.AES
     {
         public override string Decrypt(string cipherText, string key)
         {
-            /* string[,] cipher2d = plain2dGenrator(cipherText);
-             string[,] subcipher2d;
-             string[,] shiftcipher2d;
-             string[,] multiply_cipher;
-
-             string[,] round_key = plain2dGenrator(key);
-             string[,] generation_key = new string[4, 4];
-             string[,] addRoundKeyPlain2d = new string[4, 4];
-             string plain_text="";*/
-            string[,] cipher2d = plain2dGenrator("0xd42711aee0bf98f1b8b45de51e415230");
+            // sub = 0xd42711aee0bf98f1b8b45de51e415230
+            //mix= 0x046681e5e0cb199a48f8d37a2806264c
+            // shift="0xd4bf5d30e0b452aeb84111f11e2798e5"
+            // mix= "0x046681e5e0cb199a48f8d37a2806264c"
+            string[,] cipher2d = plain2dGenrator("0xd4bf5d30e0b452aeb84111f11e2798e5");
             string[,] inv_subbytes = inv_subbyte(cipher2d);
-            string[,] invShiftRows = invshiftRows(inv_subbytes);
-            Console.WriteLine("after inv sub byte");
-            for (int i=0;i<4;i++)
-            {
-                for(int j=0; j<4;j++)
-                {
-                    Console.Write(inv_subbytes[i, j] +" ");
-                }
-                Console.WriteLine();
-            }
-            Console.WriteLine("after inv shift Rows");
-            for (int i = 0; i < 4; i++)
-            {
-                for (int j = 0; j < 4; j++)
-                {
-                    Console.Write(invShiftRows[i, j] + " ");
-                }
-                Console.WriteLine();
-            }
+             string[,] inv_mix = invers_mix(cipher2d);
+            string[,] inv_shift = invshiftRows(cipher2d);
+             for (int i=0;i<4;i++)
+             {
+                 for(int j=0; j<4;j++)
+                 {
+                     Console.Write(inv_shift[i, j] +" ");
+                 }
+                 Console.WriteLine();
+             }
+
+           
             return null;
         }
-
-
-
+        //invers subbytes
         private string get_index(string val)
         {
             bool check = false;
@@ -84,6 +70,199 @@ namespace SecurityLibrary.AES
                 }
             }
             return invers;
+        }
+        // inverse shift 
+
+        public string[,] invshiftRows(string[,] invsubPlain2d)
+        {
+            string[,] shiftPlain2d = new string[4, 4];
+            for (int i = 0; i < 4; i++)
+            {
+                for (int j = 0; j < 4; j++)
+                {
+                    if (i == 0)
+                    {
+                        shiftPlain2d[i, j] = invsubPlain2d[i, j];
+                    }
+                    else
+                    {
+                        shiftPlain2d[i, (j + i) % 4] = invsubPlain2d[i, j];
+                    }
+                }
+            }
+
+
+            return shiftPlain2d;
+        }
+        //inverse mix colums
+        string[,] inv = { { "0e", "0b", "0d", "09" }, { "09","0e","0b","0d" }, { "0d","09","0e","0b"}, {"0b","0d","09","0e" } };
+        private string[,] invers_mix(string[,] matrix)
+        {
+            
+            string[,] mix_colums = new string[4, 4];
+            string[,] binary_matrix = new string[4, 4];
+            string[] arr = new string[4];
+            for (int i = 0; i < 4; i++)
+            {
+                for (int j = 0; j < 4; j++)
+                {
+                    char char1 = matrix[i, j][0];
+                    char char2 = matrix[i, j][1];
+                    string binary1 = Convert.ToString(Convert.ToInt64(char1.ToString(), 16), 2);
+                    String binary2 = Convert.ToString(Convert.ToInt64(char2.ToString(), 16), 2);
+                    binary1 = binary1.PadLeft(4, '0');
+                    binary2 = binary2.PadLeft(4, '0');
+                    string final_binary = binary1 + binary2;
+
+                    binary_matrix[i, j] = final_binary;
+
+
+
+                }
+            }
+            for (int l = 0; l < 4; l++)
+            {
+                for (int i = 0; i < 4; i++)
+                {
+
+                    for (int j = 0; j < 4; j++)
+                    {
+                        if (inv[i, j] == "09")
+                        {
+                            string num = "";
+                            //shift
+                            for(int k=0;k<3;k++)
+                            {
+                                if (k == 0)
+                                {
+                                    num = binary_matrix[j, l].Substring(1) + "0";
+                                    if (binary_matrix[j, l][k] == '1')
+                                    {
+                                        num = xor(num, "00011011");
+                                    }
+                                }
+                                else
+                                {
+                                    num = num.Substring(1) + "0";
+                                    if (binary_matrix[j, l][k] == '1')
+                                    {
+                                        num = xor(num, "00011011");
+                                    }
+                                }
+
+                            }
+                            num = xor(num, binary_matrix[j, l]);
+                            arr[j] = num;
+                        }
+                        else if (inv[i, j] == "0b")
+                        {
+                            string num = "";
+                            //shift
+                            for (int k = 0; k < 2; k++)
+                            {
+                                if (k == 0)
+                                {
+                                    num = binary_matrix[j, l].Substring(1) + "0";
+                                    if (binary_matrix[j, l][k] == '1')
+                                    {
+                                        num = xor(num, "00011011");
+                                    }
+                                }
+                                else
+                                {
+                                    num = num.Substring(1) + "0";
+                                    if (binary_matrix[j, l][k] == '1')
+                                    {
+                                        num = xor(num, "00011011");
+                                    }
+                                }
+
+                            }
+                            num = xor(num, binary_matrix[j, l]);
+                           string numm = num.Substring(1) + "0";
+                            if (num[0] == '1')
+                            {
+                                numm = xor(numm, "00011011");
+                            }
+                            numm = xor(numm, binary_matrix[j, l]);
+
+                            arr[j] = numm;
+                        }
+
+                        else if(inv[i, j] == "0d")
+                        {
+                            string num = "";
+                            num = binary_matrix[j, l].Substring(1) + "0";
+                            if (binary_matrix[j, l][0] == '1')
+                            {
+                                num = xor(num, "00011011");
+                            }
+                            num = xor(num, binary_matrix[j, l]);
+
+                            for (int k = 0; k < 2; k++)
+                            {
+                                if (k == 0)
+                                {
+                                    char x = num[0];
+                                    num = num.Substring(1) + "0";
+                                    if (x == '1')
+                                    {
+                                        num = xor(num, "00011011");
+                                    }
+                                }
+                                else
+                                {
+                                    char x = num[0];
+                                    num = num.Substring(1) + "0";
+                                    if (x== '1')
+                                    {
+                                        num = xor(num, "00011011");
+                                    }
+                                }
+
+                            }
+                            num = xor(num, binary_matrix[j, l]);
+                           
+
+                            arr[j] = num;
+                        }
+                        else
+                        {
+                            string num = "";
+                            num = binary_matrix[j, l].Substring(1) + "0";
+                            if (binary_matrix[j, l][0] == '1')
+                            {
+                                num = xor(num, "00011011");
+                            }
+                            num = xor(num, binary_matrix[j, l]);
+
+                            char x = num[0];
+                            num = num.Substring(1) + "0";
+                            if (x == '1')
+                            {
+                                num = xor(num, "00011011");
+                            }
+
+                            num = xor(num, binary_matrix[j, l]);
+
+                             x = num[0];
+                            num = num.Substring(1) + "0";
+                            if (x == '1')
+                            {
+                                num = xor(num, "00011011");
+                            }
+                            arr[j] = num;
+                        }
+
+
+                    }
+
+                    mix_colums[i, l] = xor(arr[0], arr[1], arr[2], arr[3]);
+
+                }
+            }
+
+            return mix_colums;
         }
 
         public override string Encrypt(string plainText, string key)
@@ -230,33 +409,13 @@ namespace SecurityLibrary.AES
 
             return shiftPlain2d;
         }
-        public string[,] invshiftRows(string[,] invsubPlain2d)
-        {
-            string[,] shiftPlain2d = new string[4, 4];
-            for (int i = 0; i < 4; i++)
-            {
-                for (int j = 0; j < 4; j++)
-                {
-                    if (i == 0)
-                    {
-                        shiftPlain2d[i, j] = invsubPlain2d[i, j];
-                    }
-                    else
-                    {
-                        shiftPlain2d[i, (j+i) % 4] = invsubPlain2d[i, j];
-                    }
-                }
-            }
 
-
-            return shiftPlain2d;
-        }
 
 
 
         //mix columns
 
-        string[,] multiply = { { "2", "3", "1", "1" }, { "1", "2", "3", "1" }, { "1", "1", "2", "3" }, { "3", "1", "1", "2" } };
+     string[,] multiply = { { "2", "3", "1", "1" }, { "1", "2", "3", "1" }, { "1", "1", "2", "3" }, { "3", "1", "1", "2" } };
         private string[,] mlti(string[,] pt)
         {
             //convert pt_to binary
@@ -318,6 +477,7 @@ namespace SecurityLibrary.AES
 
 
                     }
+                  
                     mix_colums[i, l] = xor(arr[0], arr[1], arr[2], arr[3]);
                    
                 }
