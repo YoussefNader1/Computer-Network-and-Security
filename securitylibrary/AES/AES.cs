@@ -17,20 +17,52 @@ namespace SecurityLibrary.AES
             //mix= 0x046681e5e0cb199a48f8d37a2806264c
             // shift="0xd4bf5d30e0b452aeb84111f11e2798e5"
             // mix= "0x046681e5e0cb199a48f8d37a2806264c"
-            string[,] cipher2d = plain2dGenrator("0xd4bf5d30e0b452aeb84111f11e2798e5");
+
+            List<string[,]> keys = new List<string[,]>();
+            string[,] generation_key = new string[4,4];
+           string[,] round_key= plain2dGenrator(key.ToLower());
+            string[,] cipher= plain2dGenrator(cipherText.ToLower());
+            for ( int i=0;i<10;i++)
+            {
+                if (i == 0)
+                    generation_key = genration_key(round_key, i);
+                else
+                    generation_key = genration_key(generation_key, i);
+                keys.Add(generation_key);
+
+
+            }
+
+
+            for (int k = 0; k < keys.Count; k++)
+            {
+                for (int i = 0; i < 4; i++)
+                {
+                    for (int j = 0; j < 4; j++)
+                    {
+                        Console.Write(keys[k][i, j] + " ");
+                    }
+                    Console.WriteLine();
+                }
+                Console.WriteLine("____________________________");
+            }
+            
+           /* string[,] cipher2d = plain2dGenrator("0x046681e5e0cb199a48f8d37a2806264c");
             string[,] inv_subbytes = inv_subbyte(cipher2d);
              string[,] inv_mix = invers_mix(cipher2d);
             string[,] inv_shift = invshiftRows(cipher2d);
-             for (int i=0;i<4;i++)
-             {
-                 for(int j=0; j<4;j++)
-                 {
-                     Console.Write(inv_shift[i, j] +" ");
-                 }
-                 Console.WriteLine();
-             }
+            
+                  for (int i = 0; i < 4; i++)
+                  {
+                      for (int j = 0; j < 4; j++)
+                      {
+                          Console.Write(inv_mix[i, j] + " ");
+                      }
+                      Console.WriteLine();
+                  }
+                  Console.WriteLine("__________________________________________");*/
 
-           
+
             return null;
         }
         //invers subbytes
