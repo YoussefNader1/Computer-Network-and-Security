@@ -24,7 +24,9 @@ namespace SecurityLibrary.AES
              string plain_text="";*/
             string[,] cipher2d = plain2dGenrator("0xd42711aee0bf98f1b8b45de51e415230");
             string[,] inv_subbytes = inv_subbyte(cipher2d);
-            for(int i=0;i<4;i++)
+            string[,] invShiftRows = invshiftRows(inv_subbytes);
+            Console.WriteLine("after inv sub byte");
+            for (int i=0;i<4;i++)
             {
                 for(int j=0; j<4;j++)
                 {
@@ -32,8 +34,20 @@ namespace SecurityLibrary.AES
                 }
                 Console.WriteLine();
             }
+            Console.WriteLine("after inv shift Rows");
+            for (int i = 0; i < 4; i++)
+            {
+                for (int j = 0; j < 4; j++)
+                {
+                    Console.Write(invShiftRows[i, j] + " ");
+                }
+                Console.WriteLine();
+            }
             return null;
         }
+
+
+
         private string get_index(string val)
         {
             bool check = false;
@@ -216,7 +230,27 @@ namespace SecurityLibrary.AES
 
             return shiftPlain2d;
         }
+        public string[,] invshiftRows(string[,] invsubPlain2d)
+        {
+            string[,] shiftPlain2d = new string[4, 4];
+            for (int i = 0; i < 4; i++)
+            {
+                for (int j = 0; j < 4; j++)
+                {
+                    if (i == 0)
+                    {
+                        shiftPlain2d[i, j] = invsubPlain2d[i, j];
+                    }
+                    else
+                    {
+                        shiftPlain2d[i, (j+i) % 4] = invsubPlain2d[i, j];
+                    }
+                }
+            }
 
+
+            return shiftPlain2d;
+        }
 
 
 
