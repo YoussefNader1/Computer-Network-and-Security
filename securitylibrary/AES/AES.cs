@@ -18,11 +18,12 @@ namespace SecurityLibrary.AES
             // shift="0xd4bf5d30e0b452aeb84111f11e2798e5"
             // mix= "0x046681e5e0cb199a48f8d37a2806264c"
 
+            
             List<string[,]> keys = new List<string[,]>();
             string[,] generation_key = new string[4,4];
            string[,] round_key= plain2dGenrator(key.ToLower());
             string[,] cipher= plain2dGenrator(cipherText.ToLower());
-            for ( int i=0;i<10;i++)
+            for (int i = 0; i < 10; i++)
             {
                 if (i == 0)
                     generation_key = genration_key(round_key, i);
@@ -34,36 +35,82 @@ namespace SecurityLibrary.AES
             }
 
 
-            for (int k = 0; k < keys.Count; k++)
+            //for (int k = 0; k < keys.Count; k++)
+            //{
+            //    for (int i = 0; i < 4; i++)
+            //    {
+            //        for (int j = 0; j < 4; j++)
+            //        {
+            //            Console.Write(keys[k][i, j] + " ");
+            //        }
+            //        Console.WriteLine();
+            //    }
+            //    Console.WriteLine("____________________________");
+            //}
+
+            /* string[,] cipher2d = plain2dGenrator("0x046681e5e0cb199a48f8d37a2806264c");
+             string[,] inv_subbytes = inv_subbyte(cipher2d);
+              string[,] inv_mix = invers_mix(cipher2d);
+             string[,] inv_shift = invshiftRows(cipher2d);
+
+                   for (int i = 0; i < 4; i++)
+                   {
+                       for (int j = 0; j < 4; j++)
+                       {
+                           Console.Write(inv_mix[i, j] + " ");
+                       }
+                       Console.WriteLine();
+                   }
+                   Console.WriteLine("__________________________________________");*/
+            
+            string[,] invsubPlain2d;
+            string[,] invshiftPlain2d;
+            string[,] invmultiply_plan=new string[4,4];
+            string[,] invroundkey=add_round_key(cipher, keys[9]);
+
+            invshiftPlain2d = invshiftRows(invroundkey);
+            invsubPlain2d = inv_subbyte(invshiftPlain2d);
+            
+
+
+            for (int i = 0; i < 10; i++)
             {
-                for (int i = 0; i < 4; i++)
+                if (i < 9)
                 {
-                    for (int j = 0; j < 4; j++)
-                    {
-                        Console.Write(keys[k][i, j] + " ");
-                    }
-                    Console.WriteLine();
+
+                    generation_key = add_round_key(invsubPlain2d, keys[8 - i]);
+                    invmultiply_plan = invers_mix(generation_key);
+                    invshiftPlain2d = invshiftRows(invmultiply_plan);
+                    invsubPlain2d = inv_subbyte(invshiftPlain2d);
+                    
                 }
-                Console.WriteLine("____________________________");
+                else
+                {
+                    //invshiftPlain2d = invshiftRows(invmultiply_plan);
+                    //invsubPlain2d = inv_subbyte(invshiftPlain2d);
+                    generation_key = add_round_key(invsubPlain2d, round_key);
+                }
+            
+            
             }
-            
-           /* string[,] cipher2d = plain2dGenrator("0x046681e5e0cb199a48f8d37a2806264c");
-            string[,] inv_subbytes = inv_subbyte(cipher2d);
-             string[,] inv_mix = invers_mix(cipher2d);
-            string[,] inv_shift = invshiftRows(cipher2d);
-            
-                  for (int i = 0; i < 4; i++)
-                  {
-                      for (int j = 0; j < 4; j++)
-                      {
-                          Console.Write(inv_mix[i, j] + " ");
-                      }
-                      Console.WriteLine();
-                  }
-                  Console.WriteLine("__________________________________________");*/
+            string plain = "";
+            for (int i = 0; i < 4; i++)
+            {
+                for (int j = 0; j < 4; j++)
+                {
+
+                    plain += generation_key[j, i];
+                }
+
+            }
+
+            plain = "0x" + plain.ToUpper();
 
 
-            return null;
+
+
+
+            return plain;
         }
         //invers subbytes
         private string get_index(string val)
