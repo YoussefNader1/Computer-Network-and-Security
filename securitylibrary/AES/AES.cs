@@ -13,7 +13,63 @@ namespace SecurityLibrary.AES
     {
         public override string Decrypt(string cipherText, string key)
         {
-            throw new NotImplementedException();
+            /* string[,] cipher2d = plain2dGenrator(cipherText);
+             string[,] subcipher2d;
+             string[,] shiftcipher2d;
+             string[,] multiply_cipher;
+
+             string[,] round_key = plain2dGenrator(key);
+             string[,] generation_key = new string[4, 4];
+             string[,] addRoundKeyPlain2d = new string[4, 4];
+             string plain_text="";*/
+            string[,] cipher2d = plain2dGenrator("0xd42711aee0bf98f1b8b45de51e415230");
+            string[,] inv_subbytes = inv_subbyte(cipher2d);
+            for(int i=0;i<4;i++)
+            {
+                for(int j=0; j<4;j++)
+                {
+                    Console.Write(inv_subbytes[i, j] +" ");
+                }
+                Console.WriteLine();
+            }
+            return null;
+        }
+        private string get_index(string val)
+        {
+            bool check = false;
+            string value = "";
+            for(int i=0;i<16;i++)
+            {
+                if (check == true)
+                    break;
+                for(int j=0;j<16;j++)
+                {
+                   if( S_Box[i,j]==val)
+                   {
+                        value = i.ToString("X") + j.ToString("X");
+                        
+                        check = true;
+                   }
+
+
+                }
+            }
+            return value;
+        }
+        private string[,] inv_subbyte(string[,] cipher)
+        {
+            string[,] invers = new string[4, 4];
+            for(int i=0;i<4;i++)
+            {
+                for(int j=0;j<4;j++)
+                {
+                  string val=  get_index(cipher[i, j]);
+                    invers[i, j] = val;
+
+
+                }
+            }
+            return invers;
         }
 
         public override string Encrypt(string plainText, string key)
