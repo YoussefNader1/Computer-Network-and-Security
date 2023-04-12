@@ -17,29 +17,68 @@ namespace SecurityLibrary.AES
         }
 
         public override string Encrypt(string plainText, string key)
-        {
-            string s= "0x193de3bea0f4e22b9ac68d2ae9f84808";
-            string[,] plain2d = plain2dGenrator(s);
-            string[,] subPlain2d = subBytes(plain2d);
-            string[,] shiftPlain2d = shiftRows(subPlain2d);
-            string[,] multiply_plan = mlti(shiftPlain2d);
+        { 
+            string[,] plain2d = plain2dGenrator(plainText);
+            string[,] subPlain2d ;
+            string[,] shiftPlain2d ;
+            string[,] multiply_plan ;
+          
+            string[,] round_key = plain2dGenrator(key);
+            string[,] generation_key=new string[4,4];
+            string[,] addRoundKeyPlain2d = new string[4, 4];
+            //first
 
-            //round key
-            
-            string[,] round_key = plain2dGenrator("0xa0fefe1788542cb123a339392a6c7605");
-
-            string[,] addRoundKeyPlain2d = add_round_key(multiply_plan,round_key);
+            addRoundKeyPlain2d = add_round_key(plain2d, round_key);
 
 
-            /* for(int i=0;i<4;i++)
+
+            //first 9 round
+            for (int i=0;i<10;i++)
+            {
+                if (i == 0)
+                {
+                    subPlain2d = subBytes(addRoundKeyPlain2d);
+                    shiftPlain2d = shiftRows(subPlain2d);
+                    multiply_plan = mlti(shiftPlain2d);
+                    generation_key = genration_key(round_key, i);
+                    addRoundKeyPlain2d = add_round_key(multiply_plan, generation_key);
+                }
+                else if(i<9)
+                {
+                    subPlain2d = subBytes(addRoundKeyPlain2d);
+                    shiftPlain2d = shiftRows(subPlain2d);
+                    multiply_plan = mlti(shiftPlain2d);
+                    generation_key = genration_key(generation_key, i);
+                    addRoundKeyPlain2d = add_round_key(multiply_plan, generation_key);
+                }
+                else
+                {
+                    subPlain2d = subBytes(addRoundKeyPlain2d);
+                    shiftPlain2d = shiftRows(subPlain2d);
+                   
+                    generation_key = genration_key(generation_key, i);
+                    addRoundKeyPlain2d = add_round_key(shiftPlain2d, generation_key);
+
+                }
+
+            }
+
+            //roung 10
+
+            string cipher="";
+            for (int i=0;i<4;i++)
              {
                  for(int j=0;j<4;j++)
                  {
-                     Console.Write(multiply_plan[i, j] + "  ");
+                   
+                    cipher += addRoundKeyPlain2d[j, i];
                  }
-                 Console.WriteLine();
-             }*/
-             return null;
+               
+             }
+            
+            cipher = "0x" + cipher.ToUpper();
+           
+            return cipher;
         }
 
         string[,] plain2dGenrator(string plainText)
@@ -241,6 +280,8 @@ namespace SecurityLibrary.AES
             string strHex = Convert.ToInt32(str1, 2).ToString("X").ToLower()+ Convert.ToInt32(str2, 2).ToString("X").ToLower();
             return strHex;
         }
+
+       
         //around_key
         public string[,] add_round_key(string[,] multiply_plan,string[,] roundKey)
         {
@@ -278,7 +319,120 @@ namespace SecurityLibrary.AES
 
         }
 
+        // generation key
+        string[] recon_table= {"01","02","04","08","10","20","40","80","1b","36"};
+        private string[,] genration_key(string[,]key, int k)
+        {
+            string[,] generation = new string[4, 4];
+            string[] colum3 = new string[4];
+            
+            //colums 4
+            //rotation
+            for(int i=0;i<4;i++)
+            {
+               
+               if(i==3)
+                {
+                    colum3[i] = key[0, 3];
 
+                }
+               else
+                    colum3[i] = key[i+1, 3];
+
+                
+               
+            }
+            //substution
+            for(int i=0;i<4;i++)
+            {
+                char char1 = colum3[i][0];
+                char char2 = colum3[i][1];
+                colum3[i] = getFromS_Box(char1, char2);
+              
+            }
+            //generate first colums
+            for (int i=0;i<4; i++)
+            {
+                string result;
+                string binary1 = Convert.ToString(Convert.ToInt64(colum3[i][0].ToString(), 16), 2);
+                string binary2 = Convert.ToString(Convert.ToInt64(colum3[i][1].ToString(), 16), 2);
+                string binary3 = Convert.ToString(Convert.ToInt64(key[i, 0][0].ToString(), 16), 2);
+                string binary4 = Convert.ToString(Convert.ToInt64(key[i, 0][1].ToString(), 16), 2);
+                
+
+                binary1 = binary1.PadLeft(4, '0');
+                binary2 = binary2.PadLeft(4, '0');
+                binary3 = binary3.PadLeft(4, '0');
+                binary4 = binary4.PadLeft(4, '0');
+                string first_binary = binary1 + binary2;
+                string second_binary = binary3 + binary4;
+                if (i == 0)
+                {
+                    string rcon = recon_table[k];
+                    string bin1 = Convert.ToString(Convert.ToInt64(rcon[0].ToString(), 16), 2);
+                    string bin2 = Convert.ToString(Convert.ToInt64(rcon[1].ToString(), 16), 2);
+                    bin1 = bin1.PadLeft(4, '0');
+                    bin2 = bin2.PadLeft(4, '0');
+                    string rcon_binary = bin1 + bin2;
+
+                    result = xor(first_binary, second_binary);
+                    result = xor(result, rcon_binary);
+                    string str1 = result.Substring(0, 4);
+                    string str2 = result.Substring(4, 4);
+                    string strHex = Convert.ToInt32(str1, 2).ToString("X").ToLower() + Convert.ToInt32(str2, 2).ToString("X").ToLower();
+                    generation[i, 0] = strHex;
+                }
+                else
+                {
+                    result = xor(first_binary, second_binary);
+                    result = xor(result, "00000000");
+                    string str1 = result.Substring(0, 4);
+                    string str2 = result.Substring(4, 4);
+
+                    string strHex = Convert.ToInt32(str1, 2).ToString("X").ToLower() + Convert.ToInt32(str2, 2).ToString("X").ToLower();
+                    generation[i, 0] = strHex;
+
+                  
+                }
+              
+               
+
+
+            }
+           
+           // generator all colums
+            for (int j=1;j<4;j++)
+            {
+                for(int i=0; i<4;i++)
+                {
+                    string result;
+                    string binary1 = Convert.ToString(Convert.ToInt64(generation[i,j-1][0].ToString(), 16), 2);
+                    string binary2 = Convert.ToString(Convert.ToInt64(generation[i,j-1][1].ToString(), 16), 2);
+                    string binary3 = Convert.ToString(Convert.ToInt64(key[i, j][0].ToString(), 16), 2);
+                    string binary4 = Convert.ToString(Convert.ToInt64(key[i, j][1].ToString(), 16), 2);
+
+
+                    binary1 = binary1.PadLeft(4, '0');
+                    binary2 = binary2.PadLeft(4, '0');
+                    binary3 = binary3.PadLeft(4, '0');
+                    binary4 = binary4.PadLeft(4, '0');
+                    string first_binary = binary1 + binary2;
+                    string second_binary = binary3 + binary4;
+
+                    result = xor(first_binary, second_binary);
+
+                    string str1 = result.Substring(0, 4);
+                    string str2 = result.Substring(4, 4);
+
+                    string strHex = Convert.ToInt32(str1, 2).ToString("X").ToLower() + Convert.ToInt32(str2, 2).ToString("X").ToLower();
+                    generation[i, j] = strHex;
+
+
+
+                }
+            }
+            return generation;
+        }
 
 
 
