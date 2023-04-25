@@ -28,7 +28,7 @@ namespace SecurityLibrary.RSA
         {
             int n = p * q;
             int phay_n = (p - 1) * (q - 1);
-            int d, M = -1;
+            int d, M = 1;
             for (d = 0; d < n; d++)
                 if (d * e % phay_n == 1)
                     break;
