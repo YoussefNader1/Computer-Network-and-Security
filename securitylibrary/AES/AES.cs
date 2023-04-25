@@ -86,8 +86,7 @@ namespace SecurityLibrary.AES
                 }
                 else
                 {
-                    //invshiftPlain2d = invshiftRows(invmultiply_plan);
-                    //invsubPlain2d = inv_subbyte(invshiftPlain2d);
+
                     generation_key = add_round_key(invsubPlain2d, round_key);
                 }
             
